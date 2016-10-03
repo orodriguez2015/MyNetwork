@@ -20,6 +20,7 @@ public class WifiInfo implements Serializable {
     private String dns1          = null;
     private String dns2          = null;
     private String ipAddressDhcpServer = null;
+    private boolean wifiEnabled  = false;
 
 
     /**
@@ -44,7 +45,7 @@ public class WifiInfo implements Serializable {
      * @param dns2 Dirección IP del DNS secundario
      * @param ipAddressDhcpServer Dirección IP del servidor de DHCP
      */
-    public WifiInfo(String macAddress, String SSID, int linkSpeed, int idNetwork, String BSSID, String ipAddress, String gateway, String netmask, String dns1, String dns2, String ipAddressDhcpServer) {
+    public WifiInfo(String macAddress, String SSID, int linkSpeed, int idNetwork, String BSSID, String ipAddress, String gateway, String netmask, String dns1, String dns2, String ipAddressDhcpServer, boolean wifiEnabled) {
         this.macAddress = macAddress;
         this.SSID = SSID;
         this.linkSpeed = linkSpeed;
@@ -56,6 +57,7 @@ public class WifiInfo implements Serializable {
         this.dns1 = dns1;
         this.dns2 = dns2;
         this.ipAddressDhcpServer = ipAddressDhcpServer;
+        this.wifiEnabled = wifiEnabled;
     }
 
     /**
@@ -235,6 +237,22 @@ public class WifiInfo implements Serializable {
      */
     public void setGateway(String gateway) {
         this.gateway = gateway;
+    }
+
+    /**
+     * Devuelve true si la conexión wifi está habilitada y false en caso contrario
+     * @return boolean
+     */
+    public boolean isWifiEnabled() {
+        return wifiEnabled;
+    }
+
+    /**
+     * Establece si la conexión wifi está habilitada o no
+     * @param wifiEnabled boolean
+     */
+    public void setWifiEnabled(boolean wifiEnabled) {
+        this.wifiEnabled = wifiEnabled;
     }
 
 

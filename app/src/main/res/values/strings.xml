@@ -11,8 +11,26 @@
     <string name="atencion">Atención</string>
 
 
+    <string name="device">Dispositivo</string>
+    <string name="network_information">Información de red WIFI</string>
+    <string name="ip_address">Dirección IP</string>
+    <string name="mac_address">Dirección MAC</string>
+    <string name="mask_net_address">Máscara de red</string>
+    <string name="gateway_address">Puerta de enlace</string>
+    <string name="primary_dns">DNS primario</string>
+    <string name="secundary_dns">DNS secundario</string>
+    <string name="ssid">Nombre de la red WIFI</string>
+    <string name="manufacturer">Fabricante</string>
+    <string name="model">Modelo</string>
+    <string name="software_version">Versión software</string>
+    <string name="processor">Hardware</string>
+    <string name="serialNumber">Número de serie</string>
+    <string name="api_level">Nivel del API</string>
+
+
 
     <string name="error_connection_network_disable">El dispositivo no tiene habilitado ninguna conexión de red</string>
     <string name="error_network_access_status">La app no dispone de permiso para comprobar el estado de la red de su dispositivo</string>
     <string name="error_wifi_access_status">La app no dispone de permiso para comprobar el estado de la WIFI de su dispositivo</string>
+    <string name="error_disconnected_wifi">El dispositivo no está conectado a ninguna red WIFI</string>
 </resources>

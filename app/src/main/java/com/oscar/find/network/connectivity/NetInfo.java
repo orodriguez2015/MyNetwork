@@ -98,7 +98,8 @@ public class NetInfo {
                 ip = getInterfaceFirstIp(NetworkInterface.getByName(intf));
             }
         } catch (SocketException e) {
-            Log.e(TAG, e.getMessage());
+            e.printStackTrace();
+            //LogCat.error(e.getMessage());
             //Editor edit = prefs.edit();
             //edit.putString(Prefs.KEY_INTF, Prefs.DEFAULT_INTF);
             //edit.commit();
@@ -281,3 +282,8 @@ public class NetInfo {
     // }
     // }
 }
+
+
+
+
+

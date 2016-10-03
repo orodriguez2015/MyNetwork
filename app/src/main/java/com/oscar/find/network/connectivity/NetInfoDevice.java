@@ -5,6 +5,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.telephony.TelephonyManager;
 
 import com.oscar.find.network.connectivity.dto.DeviceInfo;
@@ -15,7 +16,7 @@ import com.oscar.find.network.util.LogCat;
  * Created by oscar on 29/09/16.
  */
 
-public class ConnectivityUtils {
+public class NetInfoDevice {
 
     /**
      * Comprueba si el dispositivo tiene habilitado alguna conexión de red, sean datos
@@ -57,9 +58,36 @@ public class ConnectivityUtils {
                 info = new DeviceInfo(tm.getNetworkOperatorName(),tm.getDeviceId(),tm.getSimOperatorName(),tm.getDeviceSoftwareVersion());
                 LogCat.debug("operatorName: " + tm.getNetworkOperatorName());
 
-                if (tm.getAllCellInfo() != null && tm.getAllCellInfo().size() > 0) {
-                    LogCat.debug("allCellInfo: " + tm.getAllCellInfo().get(0).toString());
-                }
+                info.setManufacturer(Build.MANUFACTURER);
+                info.setModel(Build.MODEL);
+                info.setSoftwareVersion(Build.VERSION.RELEASE);
+                info.setSerialNumber(Build.SERIAL);
+                info.setApiNumber(Build.VERSION.SDK_INT);
+                info.setProcessor(Build.HARDWARE);
+                info.setApiNumber(Build.VERSION.SDK_INT);
+
+                LogCat.debug("Build.device: " + Build.DEVICE);
+                LogCat.debug("Build.display: " + Build.DISPLAY);
+                LogCat.debug("Build.hardware: " + Build.HARDWARE);
+                LogCat.debug("Build.fingerprint: " + Build.FINGERPRINT);
+                LogCat.debug("Build.host: " + Build.HOST);
+                LogCat.debug("Build.id: " + Build.ID);
+                LogCat.debug("Build.MANUFACTURER: " + Build.MANUFACTURER);
+                LogCat.debug("Build.model: " + Build.MODEL);
+                LogCat.debug("Build.product: " + Build.PRODUCT);
+                LogCat.debug("Build.SERIAL: " + Build.SERIAL);
+                LogCat.debug("Build.user: " + Build.USER);
+                LogCat.debug("Build.type: " + Build.TYPE);
+                LogCat.debug("Build.BRAND: " + Build.BRAND);
+                LogCat.debug("Build.getRadioVersion: " + Build.getRadioVersion());
+
+
+                LogCat.debug("Build.VERSION.BASE_OS: " + Build.VERSION.BASE_OS);
+                LogCat.debug("Build.VERSION.CODENAME: " + Build.VERSION.CODENAME);
+                LogCat.debug("Build.VERSION.RELEASE: " + Build.VERSION.RELEASE);
+                LogCat.debug("Build.VERSION.SDK_INT: " + Build.VERSION.SDK_INT);
+
+
 
                 LogCat.debug("simOperatorName: " + tm.getSimOperatorName());
                 LogCat.debug("deviceId: " + tm.getDeviceId());
@@ -109,14 +137,11 @@ public class ConnectivityUtils {
     public static WifiInfo getWifiInfo(Context context) {
         WifiInfo wifiInfo = new WifiInfo();
         WifiManager wifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
-
-        boolean wifiEnabled = wifiManager.isWifiEnabled();
+        boolean wifiEnabled =  wifiManager.isWifiEnabled();
+        wifiInfo.setWifiEnabled(wifiEnabled);
 
         if(wifiEnabled) {
             LogCat.info("La conexión wifi está habilitada");
-            //android.net.wifi.WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-
-
             wifiInfo.setBSSID(wifiManager.getConnectionInfo().getBSSID());
             wifiInfo.setDns1(getIpFromIntSigned(wifiManager.getDhcpInfo().dns1));
             wifiInfo.setDns2(getIpFromIntSigned(wifiManager.getDhcpInfo().dns2));
@@ -130,22 +155,10 @@ public class ConnectivityUtils {
             wifiInfo.setSSID(wifiManager.getConnectionInfo().getSSID());
             wifiInfo.STATUS = 0;
 
-
-
-            /**
-            LogCat.debug("SSID: " + wifiInfo.getSSID());
-            LogCat.debug("getLinkSpeed: " + wifiInfo.getLinkSpeed());
-            LogCat.debug("getNetWorkId: " + wifiInfo.getNetworkId());
-            LogCat.debug("mac address: " + wifiInfo.getMacAddress());
-            LogCat.debug("getBSSID: " + wifiInfo.getBSSID());
-            LogCat.debug("getIpAddres: " + wifiInfo.getIpAddress());
-
-            LogCat.debug("serverAddress: " + wifiManager.getDhcpInfo().serverAddress);
-            LogCat.debug("serverAddress: " + wifiManager.getDhcpInfo().toString());
-            **/
-
-        } else
+        } else {
             LogCat.info("La conexión wifi está deshabilitada");
+            wifiInfo.STATUS = -1;
+        }
 
         return wifiInfo;
     }
