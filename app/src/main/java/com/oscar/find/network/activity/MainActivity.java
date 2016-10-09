@@ -1,6 +1,7 @@
-package network.oscar.com.mynetwork;
+package com.oscar.find.network.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
@@ -17,6 +18,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.oscar.find.network.connectivity.NetInfoDevice;
@@ -46,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private TextView labelProcesador  = null;
     private TextView labelVersionApiAndroid  = null;
     private TextView labelWifiDesconectado   = null;
+    private Button botonDescubrir            = null;
     private IntentFilter intentFilter = null;
     private WifiP2pManager wifip2pManager = null;
     private WifiP2pManager.Channel channel = null;
@@ -77,6 +80,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
 
 
+        Button botonDescubrir = (Button)findViewById(R.id.btnDescubrir);
+        botonDescubrir.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showHostConnectWifiActivity();
+            }
+        });
 
 
         if(PermissionUtil.appHasAccessNetworkState(getApplicationContext())) {
@@ -107,6 +117,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
+
+    /**
+     * Muestra la actividad con los direcciones ip de los hosts conectados a la misma red WIFI
+     * que el dispositivo del usuario
+     */
+    private void showHostConnectWifiActivity() {
+        Intent intent = new Intent(MainActivity.this,HostDiscoveryActivity.class);
+        startActivity(intent);
+    }
 
 
     /**
@@ -205,13 +224,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             }
         });
+    }
 
 
-
-
-
-
-
+    private void startDiscovering() {
+        LogCat.debug("MainActivity.startDiscovering ====>");
     }
 
 

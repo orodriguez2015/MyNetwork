@@ -4,9 +4,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 
+import com.oscar.find.network.activity.R;
 import com.oscar.find.network.dialog.listener.BtnAceptarCancelarDialogGenerico;
 
-import network.oscar.com.mynetwork.R;
 
 
 /**

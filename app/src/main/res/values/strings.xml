@@ -26,7 +26,7 @@
     <string name="processor">Hardware</string>
     <string name="serialNumber">Número de serie</string>
     <string name="api_level">Nivel del API</string>
-
+    <string name="connected_devices">Dispositivos conectados</string>
 
 
     <string name="error_connection_network_disable">El dispositivo no tiene habilitado ninguna conexión de red</string>

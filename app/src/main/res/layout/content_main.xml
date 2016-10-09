@@ -10,7 +10,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="network.oscar.com.mynetwork.MainActivity"
+    tools:context="network.oscar.com.mynetwork.com.oscar.find.network.connectivity.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
     <ScrollView android:id="@+id/ScrlView" android:layout_width="fill_parent" android:layout_height="fill_parent" >
@@ -375,8 +375,6 @@
 
         </LinearLayout>
 
-
-
         <LinearLayout
             android:layout_marginTop="7dp"
             android:orientation="horizontal"
@@ -393,6 +391,23 @@
                 android:textStyle="bold"
                 android:textColor="@android:color/holo_red_dark"/>
 
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_marginTop="7dp"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true">
+
+           <Button
+               android:id="@+id/btnDescubrir"
+               android:layout_width="340dp"
+               android:layout_height="match_parent"
+               android:text="Descubrir"
+               />
         </LinearLayout>
 
     </LinearLayout>

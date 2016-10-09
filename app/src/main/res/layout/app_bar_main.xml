@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="network.oscar.com.mynetwork.MainActivity">
+    tools:context="network.oscar.com.mynetwork.com.oscar.find.network.connectivity.MainActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
