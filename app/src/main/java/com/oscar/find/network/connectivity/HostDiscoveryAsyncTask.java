@@ -1,9 +1,16 @@
 package com.oscar.find.network.connectivity;
 
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 
+import com.oscar.find.network.activity.HostDiscoveryActivity;
+import com.oscar.find.network.activity.R;
+import com.oscar.find.network.connectivity.dto.Host;
+import com.oscar.find.network.connectivity.dto.ParamsAsyncTask;
 import com.oscar.find.network.util.LogCat;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -11,36 +18,37 @@ import java.util.concurrent.Executors;
  * Created by oscar on 08/10/16.
  */
 
-public class HostDiscoveryAsyncTask extends AsyncTask<String,Void,String> {
+public class HostDiscoveryAsyncTask extends AsyncTask<ParamsAsyncTask,Void,List<Host>> {
 
     private int THREADS = 10;
     private ExecutorService mPool =null;
+    private List<Host> hosts = new ArrayList<Host>();
+    private ProgressDialog pg = null;
+    private HostDiscoveryActivity actividad = null;
+
+    /**
+     * Constructor
+     * @param actividad Actividad desde la que se invoca a la tarea asíncrona
+     */
+    public HostDiscoveryAsyncTask(HostDiscoveryActivity actividad) {
+        this.actividad = actividad;
+    }
 
     @Override
-    protected String doInBackground(String... params) {
-
-        String salida = null;
-        //String ip = (String)params[0];
+    protected List<Host> doInBackground(ParamsAsyncTask... params) {
 
         long ip = 0;
-        long start = NetInfoDevice.start;
-        long end   = NetInfoDevice.end;
         long size  = NetInfoDevice.length;
+
+        ParamsAsyncTask parametros = (ParamsAsyncTask)params[0];
+        long start = parametros.getNetworkHostData().getNetwork_start();
+        long end   = parametros.getNetworkHostData().getNetwork_end();
 
         LogCat.debug("DefaultDiscovery.doInBackgroud ====>");
         LogCat.debug("DefaultDiscovery.doInBackgroud discover!=null");
         LogCat.debug("DefaultDiscovery.doInBackgroud discover start: " + start);
         LogCat.debug("DefaultDiscovery.doInBackgroud discover end: " + end);
         LogCat.debug("DefaultDiscovery.doInBackgroud discover end: " + size);
-
-
-        String dato = "192.168.1.1";
-
-        // Se obtiene la dirección MAC
-        //salida = NetInfoDevice.getHardwareAddress(dato);
-        LogCat.debug("MAC de la IP " + dato + " es " + salida);
-
-
 
         LogCat.debug("start=" + NetInfo.getIpFromLongUnsigned(NetInfoDevice.start) + " (" + start
                 + "), end=" + NetInfo.getIpFromLongUnsigned(end) + " (" + end
@@ -69,11 +77,13 @@ public class HostDiscoveryAsyncTask extends AsyncTask<String,Void,String> {
                         }
                         // Move back and forth
                         if (pt_move == 1) {
-                            //launch(pt_backward);
+
+                            altaHost(pt_backward);
                             pt_backward--;
                             pt_move = 2;
                         } else if (pt_move == 2) {
-                            //launch(pt_forward);
+
+                            altaHost(pt_backward);
                             pt_forward++;
                             pt_move = 1;
                         }
@@ -81,7 +91,7 @@ public class HostDiscoveryAsyncTask extends AsyncTask<String,Void,String> {
                 } else {
                     LogCat.debug("Sequencial scanning");
                     for (long i = start; i <= end; i++) {
-                        //launch(i);
+                        altaHost(i);
                     }
                 }
                 mPool.shutdown();
@@ -104,9 +114,45 @@ public class HostDiscoveryAsyncTask extends AsyncTask<String,Void,String> {
 
                 }
          **/
-        return null;
-
-
+        return hosts;
     }
+
+
+    /**
+     * Alta de host en la colección de hosts
+     * @param ip long
+     */
+    private void altaHost(long ip) {
+        Host host = NetInfoDevice.getHost(ip);
+        if(host!=null) {
+            hosts.add(host);
+        }
+    }
+
+
+    /**
+     * Método onPostExecute que se ejecuta después de finalizar la tarea asíncrona
+     * @param hosts List<Host>
+     */
+    @Override
+    protected void onPostExecute(List<Host> hosts) {
+        if (pg.isShowing()) {
+            this.actividad.mostrarHosts(hosts);
+            pg.dismiss();
+        }
+    }
+
+
+    /**
+     * Método onPreExecute que se ejecuta antes de iniciar la tarea asíncrona
+     */
+    @Override
+    protected void onPreExecute() {
+        this.pg = ProgressDialog.show(this.actividad, this.actividad.getString(R.string.procesando),this.actividad.getString(R.string.espere), true, false);
+    }
+
+
+
+
 
 }

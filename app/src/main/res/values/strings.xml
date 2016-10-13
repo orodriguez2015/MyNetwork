@@ -9,6 +9,8 @@
     <string name="aceptar">Aceptar</string>
     <string name="cancelar">Cancelar</string>
     <string name="atencion">Atención</string>
+    <string name="procesando">Procesando</string>
+    <string name="espere">Espere unos segundos ...</string>
 
 
     <string name="device">Dispositivo</string>
@@ -27,8 +29,6 @@
     <string name="serialNumber">Número de serie</string>
     <string name="api_level">Nivel del API</string>
     <string name="connected_devices">Dispositivos conectados</string>
-
-
     <string name="error_connection_network_disable">El dispositivo no tiene habilitado ninguna conexión de red</string>
     <string name="error_network_access_status">La app no dispone de permiso para comprobar el estado de la red de su dispositivo</string>
     <string name="error_wifi_access_status">La app no dispone de permiso para comprobar el estado de la WIFI de su dispositivo</string>

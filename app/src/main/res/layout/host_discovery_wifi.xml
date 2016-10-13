@@ -1,0 +1,48 @@
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="75dp"
+    card_view:cardCornerRadius="5dp"
+    card_view:cardElevation="1dp"
+    card_view:contentPaddingRight="2dp"
+    card_view:contentPaddingLeft="2dp"
+    card_view:cardUseCompatPadding="true">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="match_parent"
+
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Direccion IP"
+            android:id="@+id/direccionIp"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="10dp"
+            android:textSize="16dp"
+            android:textIsSelectable="true" />
+
+        <Switch
+            android:text=""
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignEnd="@+id/direccionIp"
+            android:id="@+id/switchDireccionIp"
+            android:layout_alignRight="@+id/direccionIp"
+            />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Dirección mac"
+            android:id="@+id/direccionMac"
+            android:layout_below="@+id/direccionIp"
+            android:layout_alignLeft="@+id/direccionIp" />
+
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

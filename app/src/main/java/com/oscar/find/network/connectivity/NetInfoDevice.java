@@ -8,8 +8,10 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 
 import com.oscar.find.network.connectivity.dto.DeviceInfo;
+import com.oscar.find.network.connectivity.dto.Host;
 import com.oscar.find.network.connectivity.dto.NetworkHostData;
 import com.oscar.find.network.connectivity.dto.WifiInfo;
 import com.oscar.find.network.util.LogCat;
@@ -122,6 +124,7 @@ public class NetInfoDevice {
         String[] a = ip_addr.split("\\.");
         return (Integer.parseInt(a[0]) * 16777216 + Integer.parseInt(a[1]) * 65536
                 + Integer.parseInt(a[2]) * 256 + Integer.parseInt(a[3]));
+
     }
 
 
@@ -232,10 +235,14 @@ public class NetInfoDevice {
         LogCat.debug("ANTES ActivityDiscovery.setInfo network_end: " + network_end);
 
         // Get ip information
-        network_ip = NetInfoDevice.getUnsignedLongFromIp(NetInfoDevice.NOIP);
+
+
+        network_ip = NetInfoDevice.getUnsignedLongFromIp(getWifiInfo(context).getIpAddress());
+        LogCat.debug("Activity.setInfo network_ip mod: " + network_ip);
 
         // Se recuperan las preferencias de la aplicación
         SharedPreferences prefs = context.getSharedPreferences("preferenciasMyNetwork", Context.MODE_PRIVATE);
+
 
         if (prefs.contains(NetInfoDevice.KEY_IP_START)) {
             LogCat.debug("ActivityDiscovery.setInfo network_ip 1");
@@ -243,7 +250,6 @@ public class NetInfoDevice {
             network_start = NetInfo.getUnsignedLongFromIp(prefs.getString(NetInfoDevice.KEY_IP_START, NetInfoDevice.DEFAULT_IP_START));
             network_end = NetInfo.getUnsignedLongFromIp(prefs.getString(NetInfoDevice.KEY_IP_END, NetInfoDevice.DEFAULT_IP_END));
         } else {
-
             LogCat.debug("ActivityDiscovery.setInfo network_ip cidr");
 
             // Custom CIDR
@@ -252,25 +258,34 @@ public class NetInfoDevice {
             }
             // Detected IP
             int shift = (32 - NetInfoDevice.cidr);
+            LogCat.debug(" ActivityDiscovery.setInfo shift: " + shift );
             if (NetInfoDevice.cidr < 31) {
+                LogCat.debug(" ActivityDiscovery.setInfo network_start cidr<31");
                 network_start = (network_ip >> shift << shift) + 1;
                 network_end = (network_start | ((1 << shift) - 1)) - 1;
             } else {
+                LogCat.debug(" ActivityDiscovery.setInfo network_start cidr>=31");
                 network_start = (network_ip >> shift << shift);
                 network_end = (network_start | ((1 << shift) - 1));
             }
+
+            LogCat.debug("DESPUES ActivityDiscovery.setInfo network_ip: " + network_ip);
+            LogCat.debug("DESPUES ActivityDiscovery.setInfo network_start: " + network_start);
+            LogCat.debug("DESPUES ActivityDiscovery.setInfo network_end: " + network_end);
+
+            LogCat.debug(" ActivityDiscovery.setInfo network_start mod " + NetInfoDevice.getIpFromLongUnsigned(network_start));
+            LogCat.debug(" ActivityDiscovery.setInfo network_end mod " + NetInfoDevice.getIpFromLongUnsigned(network_end));
 
             // Reset ip start-end (is it really convenient ?)
             SharedPreferences.Editor edit = prefs.edit();
             edit.putString(NetInfoDevice.KEY_IP_START, NetInfoDevice.getIpFromLongUnsigned(network_start));
             edit.putString(NetInfoDevice.KEY_IP_END, NetInfoDevice.getIpFromLongUnsigned(network_end));
             edit.commit();
+
         }
 
 
-        LogCat.debug("DESPUES ActivityDiscovery.setInfo network_ip: " + network_ip);
-        LogCat.debug("DESPUES ActivityDiscovery.setInfo network_start: " + network_start);
-        LogCat.debug("DESPUES ActivityDiscovery.setInfo network_end: " + network_end);
+
 
         salida.setNetwork_ip(network_ip);
         salida.setNetwork_end(network_end);
@@ -278,6 +293,31 @@ public class NetInfoDevice {
 
 
         return salida;
+    }
+
+
+    /**
+     * Recupera un objeto de la clase Host con la dirección IP y dirección mac de un
+     * determinado host, con una determinada dirección IP
+     * @param ipAddress long
+     * @return Host
+     */
+    public static Host getHost(long ipAddress) {
+        String ip  = NetInfoDevice.getIpFromLongUnsigned(ipAddress);
+        String mac = null;
+        Host host  = null;
+
+
+        if(!TextUtils.isEmpty(ip)) {
+            mac = NetInfoDevice.getHardwareAddress(ip);
+            LogCat.debug("Para la ip " + ip + " su mac es " + mac);
+            if(!mac.equals(NetInfoDevice.NOMAC)) {
+                host = new Host();
+                host.setMacAddress(mac);
+                host.setIpAddress(ip);
+            }
+        }
+        return host;
     }
 
 }
