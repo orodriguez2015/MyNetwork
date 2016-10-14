@@ -1,16 +1,13 @@
 <resources>
     <string name="app_name">MyNetwork</string>
-
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-
     <string name="action_settings">Settings</string>
-
     <string name="aceptar">Aceptar</string>
     <string name="cancelar">Cancelar</string>
     <string name="atencion">Atención</string>
     <string name="procesando">Procesando</string>
-    <string name="espere">Espere unos segundos ...</string>
+    <string name="espere">Espere por favor ...</string>
 
 
     <string name="device">Dispositivo</string>
@@ -33,4 +30,6 @@
     <string name="error_network_access_status">La app no dispone de permiso para comprobar el estado de la red de su dispositivo</string>
     <string name="error_wifi_access_status">La app no dispone de permiso para comprobar el estado de la WIFI de su dispositivo</string>
     <string name="error_disconnected_wifi">El dispositivo no está conectado a ninguna red WIFI</string>
+    <string name="error_wifi_disabled">La conexión WIFI está deshabilitada</string>
+    <string name="error_wifi_enabled_but_not_connected_network">La conexión WIFI está habilitada pero no conectada a una red</string>
 </resources>

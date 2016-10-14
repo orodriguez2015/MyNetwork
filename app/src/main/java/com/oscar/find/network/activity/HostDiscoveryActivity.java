@@ -10,11 +10,7 @@ import android.view.MenuItem;
 
 import com.oscar.find.network.adapter.HostAdapter;
 import com.oscar.find.network.connectivity.HostDiscoveryAsyncTask;
-import com.oscar.find.network.connectivity.NetInfoDevice;
 import com.oscar.find.network.connectivity.dto.Host;
-import com.oscar.find.network.connectivity.dto.NetworkHostData;
-import com.oscar.find.network.connectivity.dto.ParamsAsyncTask;
-import com.oscar.find.network.util.LogCat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +51,7 @@ public class HostDiscoveryActivity extends AppCompatActivity {
 
         // Se recupera los datos de red necesarios para comenzar a escanear las direcciones ip
         // de los dispositivos conectados a la misma WIFI que el dispositivo actual
-        NetworkHostData data = NetInfoDevice.getNetworkHostData(getApplicationContext());
+        //NetworkHostData data = NetInfoDevice.getNetworkHostData(getApplicationContext());
 
         try {
             // Se crea el adapter para renderizar la vista
@@ -66,19 +62,10 @@ public class HostDiscoveryActivity extends AppCompatActivity {
 
             // Se recuperan las lista de hosts/dispositivos que están conectados a la misma red wifi
             // que el dispositivo del usuario
-            ParamsAsyncTask params = new ParamsAsyncTask();
-            params.setNetworkHostData(data);
+            //ParamsAsyncTask params = new ParamsAsyncTask();
+            //params.setNetworkHostData(data);
             HostDiscoveryAsyncTask task = new HostDiscoveryAsyncTask(this);
-            task.execute(params);
-
-            LogCat.debug("Hosts recuperados: " + hosts);
-
-            for(Host h: hosts) {
-                LogCat.debug(" IP ADDRESS: " + h.getIpAddress());
-                LogCat.debug(" MAC ADDRESS: " + h.getMacAddress());
-                LogCat.debug("");
-            }
-
+            task.execute();
 
         } catch(Exception e) {
             e.printStackTrace();

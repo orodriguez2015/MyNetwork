@@ -1,10 +1,7 @@
 package com.oscar.find.network.activity;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -27,7 +24,7 @@ import com.oscar.find.network.permissions.PermissionUtil;
 import com.oscar.find.network.util.AlertDialogHelper;
 import com.oscar.find.network.util.LogCat;
 
-import java.util.Collection;
+import static com.oscar.find.network.activity.R.id.btnDescubrir;
 
 /**
  * Actividad principal
@@ -80,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
 
 
-        Button botonDescubrir = (Button)findViewById(R.id.btnDescubrir);
+        botonDescubrir = (Button)findViewById(btnDescubrir);
         botonDescubrir.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -103,11 +100,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 LogCat.error(getString(R.string.error_wifi_access_status));
                 AlertDialogHelper.crearDialogoAlertaAdvertencia(this,getString(R.string.atencion),getString(R.string.error_wifi_access_status));
             } else {
-
                 // Se carga la información del dispositivo y de la red wifi en el activity
                 this.loadNetInfoDevice();
-                this.loadWifiManagerDevice();
-
             }
 
         } else {
@@ -123,8 +117,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      * que el dispositivo del usuario
      */
     private void showHostConnectWifiActivity() {
-        Intent intent = new Intent(MainActivity.this,HostDiscoveryActivity.class);
-        startActivity(intent);
+        if(!NetInfoDevice.getWifiInfo(getApplicationContext()).isWifiEnabled()) {
+            AlertDialogHelper.crearDialogoAlertaAdvertencia(this,getString(R.string.atencion),getString(R.string.error_disconnected_wifi)).show();
+        } else {
+            Intent intent = new Intent(MainActivity.this, HostDiscoveryActivity.class);
+            startActivity(intent);
+        }
     }
 
 
@@ -147,17 +145,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         labelVersionApiAndroid          = (TextView)findViewById(R.id.labelApiLevel);
         labelWifiDesconectado           = (TextView)findViewById(R.id.labelWifiDesconectado);
 
-
-        com.oscar.find.network.connectivity.dto.WifiInfo wifiInfo = NetInfoDevice.getWifiInfo(getApplicationContext());
+        // Se recupera la información del dispositivo
         DeviceInfo deviceInfo = NetInfoDevice.getMobileInfo(getApplicationContext());
-
-        labelDireccionIp.setText(wifiInfo.getIpAddress());
-        labelDireccionMac.setText(wifiInfo.getMacAddress());
-        labelDireccionPuertaEnlace.setText(wifiInfo.getIpAddressDhcpServer());
-        labelDireccionDnsPrimario.setText(wifiInfo.getDns1());
-        labelDireccionDnsSecundario.setText(wifiInfo.getDns2());
-        labelRedWifi.setText(wifiInfo.getSSID());
-        labelMascaraRed.setText(wifiInfo.getNetmask());
         labelFabricanteDispositivo.setText(deviceInfo.getManufacturer());
         labelModeloDispositivo.setText(deviceInfo.getModel());
         labelNumeroSerieDispositivo.setText(deviceInfo.getSerialNumber());
@@ -165,74 +154,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         labelProcesador.setText(deviceInfo.getProcessor());
         labelVersionApiAndroid.setText(deviceInfo.getApiNumber().toString());
 
-        if(wifiInfo.isWifiEnabled()) {
+        // Se recupera la información sobre la red wifi y se muestra
+        com.oscar.find.network.connectivity.dto.WifiInfo wifiInfo = NetInfoDevice.getWifiInfo(getApplicationContext());
+        if(wifiInfo.STATUS==NetInfoDevice.WIFI_INFO_OK) {
+            labelDireccionIp.setText(wifiInfo.getIpAddress());
+            labelDireccionMac.setText(wifiInfo.getMacAddress());
+            labelDireccionPuertaEnlace.setText(wifiInfo.getIpAddressDhcpServer());
+            labelDireccionDnsPrimario.setText(wifiInfo.getDns1());
+            labelDireccionDnsSecundario.setText(wifiInfo.getDns2());
+            labelRedWifi.setText(wifiInfo.getSSID());
+            labelMascaraRed.setText(wifiInfo.getNetmask());
+            // Se oculta el TextView que muestra información sobre errores al mostrar la info de red wifi a la que
+            // está conectado el dispositivo
             labelWifiDesconectado.setVisibility(View.INVISIBLE);
+        } else
+        if(wifiInfo.STATUS == NetInfoDevice.WIFI_INFO_NETWORK_DISABLED) {
+            labelWifiDesconectado.setText(getString(R.string.error_wifi_disabled));
+            this.botonDescubrir.setVisibility(View.INVISIBLE);
+
+        } else
+        if(wifiInfo.STATUS == NetInfoDevice.WIFI_INFO_NETWORK_ENABLED_NO_CONNECTED) {
+            labelWifiDesconectado.setText(getString(R.string.error_wifi_enabled_but_not_connected_network));
+            this.botonDescubrir.setVisibility(View.INVISIBLE);
         }
 
     }
-
-
-    private void loadWifiManagerDevice() {
-
-        intentFilter = new IntentFilter();
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-
-
-        wifip2pManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-        channel = wifip2pManager.initialize(this, getMainLooper(), null);
-
-        wifip2pManager.discoverPeers(channel,new WifiP2pManager.ActionListener() {
-
-            @Override
-            public void onSuccess() {
-                // Code for when the discovery initiation is successful goes here.
-                // No services have actually been discovered yet, so this method
-                // can often be left blank.  Code for peer discovery goes in the
-                // onReceive method, detailed below.
-
-                LogCat.debug("onSuccess =====>");
-
-
-
-            }
-
-            @Override
-            public void onFailure(int reasonCode) {
-                // Code for when the discovery initiation fails goes here.
-                // Alert the user that something went wrong.
-                LogCat.debug("onFailure =====>");
-            }
-        });
-
-
-
-        wifip2pManager.requestPeers(channel, new WifiP2pManager.PeerListListener() {
-            @Override
-            public void onPeersAvailable(WifiP2pDeviceList peers) {
-
-                LogCat.debug("onPeersAvailable ======>");
-                Collection<WifiP2pDevice> devices = (Collection<WifiP2pDevice>)peers.getDeviceList();
-                if(devices==null) {
-                    LogCat.debug("devices nulos");
-                } else {
-                    LogCat.debug("Dispositivos recuperados: " + devices.size());
-                }
-
-
-            }
-        });
-    }
-
-
-    private void startDiscovering() {
-        LogCat.debug("MainActivity.startDiscovering ====>");
-    }
-
-
-
 
 
     @Override

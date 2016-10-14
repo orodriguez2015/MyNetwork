@@ -17,8 +17,13 @@ import com.oscar.find.network.connectivity.dto.WifiInfo;
 import com.oscar.find.network.util.LogCat;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,6 +52,15 @@ public class NetInfoDevice {
     public static final boolean DEFAULT_IP_CUSTOM = false;
     public static final String KEY_IP_END         = "ip_end";
     public static final String DEFAULT_IP_END     = "0.0.0.0";
+    public static final String SSID_NO_EXISTS     = "0x";
+    public static final String BSSID_NO_EXISTS    = "00:00:00:00:00:00";
+
+    /** INFORMACIÓN DE RED WIFI RECUPERADA CORRECTAMENTE **/
+    public static final int WIFI_INFO_OK          = 0;
+    /** CONEXION WIFI DESHABILITADA **/
+    public static final int WIFI_INFO_NETWORK_DISABLED = -1;
+    /** CONEXION WIFI HABILITADA PERO NO CONECTADA A UNA RED **/
+    public static final int WIFI_INFO_NETWORK_ENABLED_NO_CONNECTED = -2;
 
     /**
      * Comprueba si el dispositivo tiene habilitado alguna conexión de red, sean datos
@@ -140,28 +154,39 @@ public class NetInfoDevice {
     /**
      * Devuelve información de la conexión WIFI del dispositivo
      * @param context Context
-     * @return WifiInfo
+     * @return WifiInfo que contiene los datos de conexión a la red wifi. Tener en cuenta que:
+     *          WifiInfo.STATUS = 0  --> OK
+     *          WifiInfo.STATUS = -1 --> La conexión WIFI está deshabilitada
+     *          WifiInfo.STATUS = -2 --> La conexión WIFI está habilitada pero no está conectada a ninguna red
      */
     public static WifiInfo getWifiInfo(Context context) {
         WifiInfo wifiInfo = new WifiInfo();
+        wifiInfo.STATUS = -2; // El dispositivo WIFI está habilitado pero no está conectado a ninguna red wifi
         WifiManager wifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
         boolean wifiEnabled =  wifiManager.isWifiEnabled();
         wifiInfo.setWifiEnabled(wifiEnabled);
 
         if(wifiEnabled) {
             LogCat.info("La conexión wifi está habilitada");
-            wifiInfo.setBSSID(wifiManager.getConnectionInfo().getBSSID());
-            wifiInfo.setDns1(getIpFromIntSigned(wifiManager.getDhcpInfo().dns1));
-            wifiInfo.setDns2(getIpFromIntSigned(wifiManager.getDhcpInfo().dns2));
-            wifiInfo.setGateway(getIpFromIntSigned(wifiManager.getDhcpInfo().gateway));
-            wifiInfo.setIdNetwork(wifiManager.getConnectionInfo().getNetworkId());
-            wifiInfo.setIpAddress(getIpFromIntSigned(wifiManager.getDhcpInfo().ipAddress));
-            wifiInfo.setIpAddressDhcpServer(getIpFromIntSigned(wifiManager.getDhcpInfo().serverAddress));
-            wifiInfo.setMacAddress(wifiManager.getConnectionInfo().getMacAddress());
-            wifiInfo.setNetmask(getIpFromIntSigned(wifiManager.getDhcpInfo().netmask));
-            wifiInfo.setLinkSpeed(wifiManager.getConnectionInfo().getLinkSpeed());
-            wifiInfo.setSSID(wifiManager.getConnectionInfo().getSSID());
-            wifiInfo.STATUS = 0;
+            String SSID   = wifiManager.getConnectionInfo().getSSID();
+            String BSSID = wifiManager.getConnectionInfo().getBSSID();
+
+            if(!SSID.equals(SSID_NO_EXISTS) && !BSSID.equals(BSSID_NO_EXISTS)) {
+                wifiInfo.setSSID(SSID);
+                wifiInfo.setBSSID(BSSID);
+                wifiInfo.setDns1(getIpFromIntSigned(wifiManager.getDhcpInfo().dns1));
+                wifiInfo.setDns2(getIpFromIntSigned(wifiManager.getDhcpInfo().dns2));
+                wifiInfo.setGateway(getIpFromIntSigned(wifiManager.getDhcpInfo().gateway));
+                wifiInfo.setIdNetwork(wifiManager.getConnectionInfo().getNetworkId());
+                wifiInfo.setIpAddress(getIpFromIntSigned(wifiManager.getDhcpInfo().ipAddress));
+                wifiInfo.setIpAddressDhcpServer(getIpFromIntSigned(wifiManager.getDhcpInfo().serverAddress));
+                wifiInfo.setMacAddress(wifiManager.getConnectionInfo().getMacAddress());
+                wifiInfo.setNetmask(getIpFromIntSigned(wifiManager.getDhcpInfo().netmask));
+                wifiInfo.setLinkSpeed(wifiManager.getConnectionInfo().getLinkSpeed());
+                wifiInfo.STATUS = 0;
+            }
+
+
 
         } else {
             LogCat.info("La conexión wifi está deshabilitada");
@@ -183,7 +208,6 @@ public class NetInfoDevice {
         String hw = NOMAC;
         BufferedReader bufferedReader = null;
 
-        LogCat.debug("NetInfoDevice.getHardwareAddress ip " + ip + " ===>");
         try {
             if (ip != null) {
                 String ptrn = String.format(MAC_RE, ip.replace(".", "\\."));
@@ -192,7 +216,7 @@ public class NetInfoDevice {
                 String line;
                 Matcher matcher;
                 while ((line = bufferedReader.readLine()) != null) {
-                    LogCat.debug("linea salida comando arp: " + line);
+                   // LogCat.debug("linea salida comando arp: " + line);
                     matcher = pattern.matcher(line);
                     if (matcher.matches()) {
                         hw = matcher.group(1);
@@ -204,7 +228,7 @@ public class NetInfoDevice {
                 LogCat.debug("ip is null");
             }
         } catch (IOException e) {
-            LogCat.error("Can't open/read file ARP: " + e.getMessage());
+            LogCat.error("No se puede leer la cache ARP: " + e.getMessage());
             return hw;
         } finally {
             try {
@@ -220,6 +244,52 @@ public class NetInfoDevice {
 
 
     /**
+     * Devuelve la lista de hosts conectados
+     * @return List<Host>
+     */
+    public static List<Host> getHostConnected() {
+        List<Host> hosts = new ArrayList<Host>();
+        BufferedReader bufferedReader = null;
+
+        try {
+            int linea = 0;
+            bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream("/proc/net/arp"), Charset.forName("UTF-8")));
+            String line = null;
+
+            while ((line = bufferedReader.readLine()) != null) {
+                String[] splitted = line.split(" +");
+
+                if (line != null && line.length() >= 4 && linea>0) {
+                    String ip = splitted[0];
+                    String mac = splitted[3];
+                    if (!mac.equals(NOMAC)) {
+                        Host host = new Host();
+                        host.setIpAddress(ip);
+                        host.setMacAddress(mac);
+                        hosts.add(host);
+                    }
+                }
+                linea++;
+            }
+
+        } catch (IOException e) {
+            LogCat.error("No se puede leer la cache ARP: " + e.getMessage());
+        } finally {
+            try {
+                if(bufferedReader != null) {
+                    bufferedReader.close();
+                }
+            } catch (IOException e) {
+                LogCat.error("Error al cerrar BufferedReader: " + e.getMessage());
+            }
+        }
+        return hosts;
+    }
+
+
+
+
+    /**
      * Obtiene los datos de la dirección ip de inicio y de fin, que se utilizarán para
      * escanear la red wifi en busca de dispositivos conectados a la misma
      * @param context Context
@@ -230,67 +300,48 @@ public class NetInfoDevice {
         long network_ip = 0;
         long network_start = 0;
         long network_end = 0;
-        LogCat.debug("ANTES ActivityDiscovery.setInfo network_ip: " + network_ip);
-        LogCat.debug("ANTES ActivityDiscovery.setInfo network_start: " + network_start);
-        LogCat.debug("ANTES ActivityDiscovery.setInfo network_end: " + network_end);
 
         // Get ip information
 
 
-        network_ip = NetInfoDevice.getUnsignedLongFromIp(getWifiInfo(context).getIpAddress());
-        LogCat.debug("Activity.setInfo network_ip mod: " + network_ip);
+        String ipAddress = getWifiInfo(context).getIpAddress();
+        if(ipAddress!=null) {
+            network_ip = NetInfoDevice.getUnsignedLongFromIp(ipAddress);
 
-        // Se recuperan las preferencias de la aplicación
-        SharedPreferences prefs = context.getSharedPreferences("preferenciasMyNetwork", Context.MODE_PRIVATE);
+            // Se recuperan las preferencias de la aplicación
+            SharedPreferences prefs = context.getSharedPreferences("preferenciasMyNetwork", Context.MODE_PRIVATE);
 
 
-        if (prefs.contains(NetInfoDevice.KEY_IP_START)) {
-            LogCat.debug("ActivityDiscovery.setInfo network_ip 1");
-            // Custom IP
-            network_start = NetInfo.getUnsignedLongFromIp(prefs.getString(NetInfoDevice.KEY_IP_START, NetInfoDevice.DEFAULT_IP_START));
-            network_end = NetInfo.getUnsignedLongFromIp(prefs.getString(NetInfoDevice.KEY_IP_END, NetInfoDevice.DEFAULT_IP_END));
-        } else {
-            LogCat.debug("ActivityDiscovery.setInfo network_ip cidr");
-
-            // Custom CIDR
-            if (prefs.getBoolean(NetInfoDevice.KEY_CIDR_CUSTOM, NetInfoDevice.DEFAULT_CIDR_CUSTOM)) {
-                NetInfoDevice.cidr = Integer.parseInt(prefs.getString(NetInfoDevice.KEY_CIDR, NetInfoDevice.DEFAULT_CIDR));
-            }
-            // Detected IP
-            int shift = (32 - NetInfoDevice.cidr);
-            LogCat.debug(" ActivityDiscovery.setInfo shift: " + shift );
-            if (NetInfoDevice.cidr < 31) {
-                LogCat.debug(" ActivityDiscovery.setInfo network_start cidr<31");
-                network_start = (network_ip >> shift << shift) + 1;
-                network_end = (network_start | ((1 << shift) - 1)) - 1;
+            if (prefs.contains(NetInfoDevice.KEY_IP_START)) {
+                // Custom IP
+                network_start = NetInfo.getUnsignedLongFromIp(prefs.getString(NetInfoDevice.KEY_IP_START, NetInfoDevice.DEFAULT_IP_START));
+                network_end = NetInfo.getUnsignedLongFromIp(prefs.getString(NetInfoDevice.KEY_IP_END, NetInfoDevice.DEFAULT_IP_END));
             } else {
-                LogCat.debug(" ActivityDiscovery.setInfo network_start cidr>=31");
-                network_start = (network_ip >> shift << shift);
-                network_end = (network_start | ((1 << shift) - 1));
+                // Custom CIDR
+                if (prefs.getBoolean(NetInfoDevice.KEY_CIDR_CUSTOM, NetInfoDevice.DEFAULT_CIDR_CUSTOM)) {
+                    NetInfoDevice.cidr = Integer.parseInt(prefs.getString(NetInfoDevice.KEY_CIDR, NetInfoDevice.DEFAULT_CIDR));
+                }
+                // Detected IP
+                int shift = (32 - NetInfoDevice.cidr);
+                if (NetInfoDevice.cidr < 31) {
+                    network_start = (network_ip >> shift << shift) + 1;
+                    network_end = (network_start | ((1 << shift) - 1)) - 1;
+                } else {
+                    network_start = (network_ip >> shift << shift);
+                    network_end = (network_start | ((1 << shift) - 1));
+                }
+
+                // Reset ip start-end (is it really convenient ?)
+                SharedPreferences.Editor edit = prefs.edit();
+                edit.putString(NetInfoDevice.KEY_IP_START, NetInfoDevice.getIpFromLongUnsigned(network_start));
+                edit.putString(NetInfoDevice.KEY_IP_END, NetInfoDevice.getIpFromLongUnsigned(network_end));
+                edit.commit();
             }
 
-            LogCat.debug("DESPUES ActivityDiscovery.setInfo network_ip: " + network_ip);
-            LogCat.debug("DESPUES ActivityDiscovery.setInfo network_start: " + network_start);
-            LogCat.debug("DESPUES ActivityDiscovery.setInfo network_end: " + network_end);
-
-            LogCat.debug(" ActivityDiscovery.setInfo network_start mod " + NetInfoDevice.getIpFromLongUnsigned(network_start));
-            LogCat.debug(" ActivityDiscovery.setInfo network_end mod " + NetInfoDevice.getIpFromLongUnsigned(network_end));
-
-            // Reset ip start-end (is it really convenient ?)
-            SharedPreferences.Editor edit = prefs.edit();
-            edit.putString(NetInfoDevice.KEY_IP_START, NetInfoDevice.getIpFromLongUnsigned(network_start));
-            edit.putString(NetInfoDevice.KEY_IP_END, NetInfoDevice.getIpFromLongUnsigned(network_end));
-            edit.commit();
-
-        }
-
-
-
-
-        salida.setNetwork_ip(network_ip);
-        salida.setNetwork_end(network_end);
-        salida.setNetwork_start(network_start);
-
+            salida.setNetwork_ip(network_ip);
+            salida.setNetwork_end(network_end);
+            salida.setNetwork_start(network_start);
+        } else salida = null;
 
         return salida;
     }
@@ -307,10 +358,8 @@ public class NetInfoDevice {
         String mac = null;
         Host host  = null;
 
-
         if(!TextUtils.isEmpty(ip)) {
             mac = NetInfoDevice.getHardwareAddress(ip);
-            LogCat.debug("Para la ip " + ip + " su mac es " + mac);
             if(!mac.equals(NetInfoDevice.NOMAC)) {
                 host = new Host();
                 host.setMacAddress(mac);
