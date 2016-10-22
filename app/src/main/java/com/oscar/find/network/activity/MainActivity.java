@@ -4,9 +4,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -45,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private TextView labelProcesador  = null;
     private TextView labelVersionApiAndroid  = null;
     private TextView labelWifiDesconectado   = null;
+    private TextView labelRooted = null;
     private Button botonDescubrir            = null;
     private IntentFilter intentFilter = null;
     private WifiP2pManager wifip2pManager = null;
@@ -57,15 +56,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -144,6 +134,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         labelProcesador                 = (TextView)findViewById(R.id.labelProcesador);
         labelVersionApiAndroid          = (TextView)findViewById(R.id.labelApiLevel);
         labelWifiDesconectado           = (TextView)findViewById(R.id.labelWifiDesconectado);
+        labelRooted                     = (TextView)findViewById(R.id.labelRooted);
 
         // Se recupera la información del dispositivo
         DeviceInfo deviceInfo = NetInfoDevice.getMobileInfo(getApplicationContext());
@@ -153,6 +144,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         labelVersionSoftwareDispositivo.setText(deviceInfo.getSoftwareVersion());
         labelProcesador.setText(deviceInfo.getProcessor());
         labelVersionApiAndroid.setText(deviceInfo.getApiNumber().toString());
+
+        String textoRooteado = getString(R.string.no);
+        if(deviceInfo.isRooted()) {
+            textoRooteado = getString(R.string.yes);
+        }
+        labelRooted.setText(textoRooteado);
 
         // Se recupera la información sobre la red wifi y se muestra
         com.oscar.find.network.connectivity.dto.WifiInfo wifiInfo = NetInfoDevice.getWifiInfo(getApplicationContext());
@@ -198,23 +195,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
-
-    /**
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-     **/
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override

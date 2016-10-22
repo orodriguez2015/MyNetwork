@@ -8,6 +8,8 @@
     <string name="atencion">Atención</string>
     <string name="procesando">Procesando</string>
     <string name="espere">Espere por favor ...</string>
+    <string name="yes">Si</string>
+    <string name="no">No</string>
 
 
     <string name="device">Dispositivo</string>
@@ -23,6 +25,7 @@
     <string name="model">Modelo</string>
     <string name="software_version">Versión software</string>
     <string name="processor">Hardware</string>
+    <string name="rooted">Rooteado</string>
     <string name="serialNumber">Número de serie</string>
     <string name="api_level">Nivel del API</string>
     <string name="connected_devices">Dispositivos conectados</string>

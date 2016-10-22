@@ -29,6 +29,8 @@ public class DeviceInfo implements Serializable {
     private Integer apiNumber = null;
     /** Nombre del producto **/
     private String product = null;
+    /** Dispositivo rooteado **/
+    private boolean rooted = false;
 
 
     /**
@@ -213,5 +215,22 @@ public class DeviceInfo implements Serializable {
      */
     public void setModel(String model) {
         this.model = model;
+    }
+
+
+    /**
+     * Indica si el dispositivo está rooteado
+     * @return boolean
+     */
+    public boolean isRooted() {
+        return rooted;
+    }
+
+    /**
+     * Permite indicar si el dispositivo está o no rooteado
+     * @param rooted boolean
+     */
+    public void setRooted(boolean rooted) {
+        this.rooted = rooted;
     }
 }

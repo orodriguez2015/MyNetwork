@@ -15,6 +15,7 @@ import com.oscar.find.network.connectivity.dto.Host;
 import com.oscar.find.network.connectivity.dto.NetworkHostData;
 import com.oscar.find.network.connectivity.dto.WifiInfo;
 import com.oscar.find.network.util.LogCat;
+import com.oscar.find.network.util.RootUtil;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -106,6 +107,7 @@ public class NetInfoDevice {
                 info.setApiNumber(Build.VERSION.SDK_INT);
                 info.setProcessor(Build.HARDWARE);
                 info.setApiNumber(Build.VERSION.SDK_INT);
+                info.setRooted(isDeviceRooted());
             }
 
         }catch(Exception e) {
@@ -368,5 +370,15 @@ public class NetInfoDevice {
         }
         return host;
     }
+
+    /**
+     * Comprueba si el dispositivo está rooteado
+     * @return boolean
+     */
+    public static boolean isDeviceRooted() {
+        return RootUtil.isDeviceRooted();
+    }
+
+
 
 }
